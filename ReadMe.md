@@ -162,4 +162,8 @@ sudo systemctl stop PgTgPiGpio
 
 # Confirm service is running as pgtgpigpio (not root)
 ps aux | grep PgTgPiGpio
+
+or to see user and group in list
+
+ps -eo user,group,cmd | grep PgTgPiGpio
 ```
