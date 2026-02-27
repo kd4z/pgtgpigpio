@@ -1,0 +1,35 @@
+#!/bin/bash
+# Build the pgtgpigpio Debian package.
+# Run this in WSL2 after ./build has produced build-aarch64/PgTgPiGpio.
+#
+# The staging tree is assembled under /tmp (native Linux fs) so that
+# chmod works correctly — NTFS mounts under /mnt/c ignore permission changes.
+set -e
+
+PKGNAME=pgtgpigpio
+VERSION=1.0.0
+ARCH=arm64
+PKGFILE="${PKGNAME}_${VERSION}_${ARCH}.deb"
+SRCDIR="$(pwd)"
+STAGING="/tmp/${PKGNAME}_${VERSION}_${ARCH}"
+
+echo "Assembling staging tree: ${STAGING}/"
+rm -rf "$STAGING"
+mkdir -p "$STAGING/DEBIAN"
+mkdir -p "$STAGING/usr/bin"
+mkdir -p "$STAGING/usr/share/$PKGNAME"
+mkdir -p "$STAGING/lib/systemd/system"
+
+cp "${SRCDIR}/build-aarch64/PgTgPiGpio"      "$STAGING/usr/bin/PgTgPiGpio"
+aarch64-linux-gnu-strip                       "$STAGING/usr/bin/PgTgPiGpio"
+cp "${SRCDIR}/PgTgPiGpio.conf"               "$STAGING/usr/share/$PKGNAME/PgTgPiGpio.conf.deploy"
+cp "${SRCDIR}/PgTgPiGpio.service"            "$STAGING/lib/systemd/system/PgTgPiGpio.service"
+cp "${SRCDIR}/packaging/DEBIAN/control"      "$STAGING/DEBIAN/control"
+cp "${SRCDIR}/packaging/DEBIAN/postinst"     "$STAGING/DEBIAN/postinst"
+cp "${SRCDIR}/packaging/DEBIAN/prerm"        "$STAGING/DEBIAN/prerm"
+cp "${SRCDIR}/packaging/DEBIAN/postrm"       "$STAGING/DEBIAN/postrm"
+chmod 755 "$STAGING/DEBIAN"
+chmod 755 "$STAGING/DEBIAN/postinst" "$STAGING/DEBIAN/prerm" "$STAGING/DEBIAN/postrm"
+
+dpkg-deb --build --root-owner-group "$STAGING" "${SRCDIR}/${PKGFILE}"
+echo "Built: ${SRCDIR}/${PKGFILE}"

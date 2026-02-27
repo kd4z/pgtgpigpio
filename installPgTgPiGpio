@@ -1,0 +1,18 @@
+#!/bin/bash
+# Install PgTgPiGpio on the Raspberry Pi.
+# Binary  -> /usr/local/bin/PgTgPiGpio
+# Config  -> /etc/PgTgPiGpio.conf          (live config, user-editable)
+# Template-> /etc/PgTgPiGpio.conf.deploy   (factory default; daemon copies
+#                                           this to .conf on first run only)
+
+echo "Installing binary..."
+sudo mv /home/pi/PgTgPiGpio /usr/local/bin/PgTgPiGpio
+
+echo "Installing deploy template..."
+sudo mv /home/pi/PgTgPiGpio.conf.deploy /etc/PgTgPiGpio.conf.deploy
+
+if [ -f /etc/PgTgPiGpio.conf ]; then
+    echo "Existing config preserved: /etc/PgTgPiGpio.conf"
+else
+    echo "No existing config found — daemon will create /etc/PgTgPiGpio.conf from template on first start."
+fi

@@ -1,0 +1,10 @@
+Package: pgtgpigpio
+Version: 1.0.0
+Architecture: arm64
+Maintainer: KD4Z
+Depends: libgpiod3
+Section: misc
+Priority: optional
+Description: TCP/JSON GPIO relay control service
+ PgTgPiGpio provides a persistent TCP listener with a JSON API to set,
+ clear, and time-limit GPIO relay outputs on a Raspberry Pi 4.

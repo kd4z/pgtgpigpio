@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "RPi4 aarch64 (WSL2 Debian cross-compile)",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "//wsl.localhost/Debian/usr/include",
+                "//wsl.localhost/Debian/usr/include/aarch64-linux-gnu",
+                "//wsl.localhost/Debian/usr/aarch64-linux-gnu/include",
+                "//wsl.localhost/Debian/usr/lib/gcc-cross/aarch64-linux-gnu/14/include"
+            ],
+            "defines": [
+                "_DEFAULT_SOURCE",
+                "__aarch64__",
+                "__linux__"
+            ],
+            "cStandard": "c11",
+            "intelliSenseMode": "linux-gcc-arm64"
+        }
+    ],
+    "version": 4
+}

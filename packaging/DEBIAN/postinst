@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        # Create dedicated system user if absent
+        if ! id -u pgtgpigpio >/dev/null 2>&1; then
+            adduser --system --group --no-create-home \
+                    --home /nonexistent --shell /usr/sbin/nologin \
+                    pgtgpigpio
+        fi
+
+        # Add to gpio group for /dev/gpiochip0 access
+        if getent group gpio >/dev/null; then
+            adduser pgtgpigpio gpio 2>/dev/null || true
+        fi
+
+        # Create config directory
+        mkdir -p /etc/PgTgPiGpio
+
+        # First-run only: copy factory default if no live config exists
+        if [ ! -f /etc/PgTgPiGpio/PgTgPiGpio.conf ]; then
+            cp /usr/share/pgtgpigpio/PgTgPiGpio.conf.deploy \
+               /etc/PgTgPiGpio/PgTgPiGpio.conf
+            echo "pgtgpigpio: created /etc/PgTgPiGpio/PgTgPiGpio.conf from template"
+        fi
+
+        chown pgtgpigpio:pgtgpigpio /etc/PgTgPiGpio/PgTgPiGpio.conf
+        chmod 640 /etc/PgTgPiGpio/PgTgPiGpio.conf
+
+        # Enable and start the service
+        systemctl daemon-reload
+        systemctl enable PgTgPiGpio.service
+        systemctl restart PgTgPiGpio.service || true
+        ;;
+esac

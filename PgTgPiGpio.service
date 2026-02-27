@@ -1,0 +1,18 @@
+[Unit]
+Description=PgTgPiGpio TCP/JSON GPIO relay control service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/PgTgPiGpio /etc/PgTgPiGpio/PgTgPiGpio.conf
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=PgTgPiGpio
+User=pgtgpigpio
+Group=gpio
+
+[Install]
+WantedBy=multi-user.target

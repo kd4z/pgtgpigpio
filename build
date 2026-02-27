@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd build-aarch64/
+# Only need to do this one time but do it anyway
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/aarch64-rpi4-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -G Ninja
+
+# compile
+ninja
+
+

@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    purge)
+        rm -rf /etc/PgTgPiGpio
+        deluser pgtgpigpio 2>/dev/null || true
+        ;;
+    remove)
+        rm -f /etc/PgTgPiGpio/PgTgPiGpio.conf
+        ;;
+esac
