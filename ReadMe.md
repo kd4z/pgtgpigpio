@@ -1,6 +1,8 @@
-# PgTgPiGpio Daemon
+# PgTgPiGpio Daemon for PgTgBridge
 
-TCP/JSON GPIO relay control service for Raspberry Pi 4 (Debian Trixie, libgpiod ≥ 2.0).
+TCP/JSON GPIO relay control service targeting Raspberry Pi 4 (Debian Trixie, libgpiod ≥ 2.0).
+Specifically for use with PgTgBridge built-in plugin PgTg PiGpio.  Can be used as a smart 
+wrapper to GPIOD that is accessible using JSON strings such as from Node-Red.
 
 ---
 
@@ -28,25 +30,40 @@ Commands are newline-delimited JSON sent over TCP. The connection remains open b
 
 On expiry the server sends `{"status":"ok","output":"<name>","value":0}` on the open connection if a client is connected.
 
+### PgTg Bridge Watchdog Integration
+
+When the PgTgBridge GPIO plugin is configured with an **Amp PTT** output, it sends `value: 15`
+(not `1`) whenever the amplifier PTT is keyed. This starts a 15-second channel watchdog timer on
+the service side. PgTgBridge then re-sends `value: 15` every 10 seconds to keep the watchdog
+alive for the duration of the transmission. When PTT is released the PgTgBridge sends `value: 0`.
+
+If the PgTgBridge loses connectivity, the watchdog expires after 15 seconds and the PTT output is
+automatically deactivated — preventing a stuck transmitter if the connectivity to the host machine is lost.
+
+If the PgTgBridge service is stopped, PgTg sends `value: 0` to all configured GPIO channels before halting.
+
 ---
 
 ## Configuration File
 
-Location: `/etc/PgTgPiGpio/PgTgPiGpio.conf` (production) or `./PgTgPiGpio.conf` (development)
+Location: `/etc/PgTgPiGpio/PgTgPiGpio.conf` 
 
 ```ini
 # PgTgPiGpio configuration file
+# You may need to change the gpio_chip assignment to suit your particular hardware.
 port = 5555
 gpio_chip = /dev/gpiochip0
 
 # output<N> = GPIO BCM offset
+# These numbers are the GPIO number, not pin numbers on the Raspberry Pi!
+
 output1 = 6
 output2 = 13
 output3 = 19
 output4 = 26
 ```
 
-The live config is created from the package template on first install and is preserved on upgrade and removal. Edit it directly on the Pi; it is never overwritten by `apt`.
+The live conf file is created from the package template on first install and is preserved on upgrade and removal. Edit it directly on the Pi; it is never overwritten by `apt`.
 
 ---
 
@@ -81,36 +98,72 @@ The service file is installed and enabled automatically by the Debian package.
 
 ## Build & Deploy
 
-### 1. Cross-compile (in WSL2)
+Two build workflows are available — cross-compile from a WSL2 host, or build natively on the Pi.
+If building under WSL2, a deb package is created.
+
+---
+
+### Option A — Native build on the Pi
+
+Prerequisites (install once on the Pi):
+
+```bash
+sudo apt install cmake ninja-build pkg-config libgpiod-dev
+```
 
 ```bash
 ./build
+# Produces: build-native/PgTgPiGpio (you need to setup the cross-compiler yourself)
+```
+
+The script verifies all prerequisites and the libgpiod version before building.
+
+You will be responsible for copying the PgTgPiGpio binary to:
+`/usr/bin/PgTgPiGpio`
+
+make sure it is marked as executable:
+`sudo chmod +x /usr/bin/PgTgPiGpio`
+
+and creating the configuration file here:
+ `/etc/PgTgPiGpio/PgTgPiGpio.conf`
+ 
+ 
+---
+
+### Option B — Cross-compile (in WSL2)
+
+```bash
+./build-with-cross-compiler
 # Produces: build-aarch64/PgTgPiGpio (ELF aarch64)
 ```
 
-### 2. Package
+### 1. Package (after cross-compile in WSL2)
 
 ```bash
 ./package
 # Produces: pgtgpigpio_1.0.0_arm64.deb
+# Sources binary from build-aarch64/PgTgPiGpio
 ```
 
-### 3. Deploy to Pi
+### 2. Deploy to Pi (use after cross-compile and deb package creation)
 
 ```bash
 ./deploy
-# SCPs pgtgpigpio_1.0.0_arm64.deb to pi@192.168.111.241:/home/pi/
+# SCPs pgtgpigpio_1.0.0_arm64.deb to pi@<yourPiIpaddress>:/home/pi/
 ```
 
-### 4. Install on Pi
+### 3. Install on Pi
+
+SCP the deb package to `/tmp`
 
 ```bash
-sudo apt install /home/pi/pgtgpigpio_1.0.0_arm64.deb
+sudo apt install /tmp/pgtgpigpio_1.0.0_arm64.deb
 ```
 
 The package installer:
 - Creates the `pgtgpigpio` system user and adds it to the `gpio` group
 - Copies the factory-default config to `/etc/PgTgPiGpio/PgTgPiGpio.conf` (first install only)
+- Copies the daemon binary to `/usr/bin` 
 - Installs and starts the systemd service
 
 ---

@@ -1,10 +1,48 @@
 #!/bin/bash
+# Native build script for PgTgPiGpio on Raspberry Pi (Debian Trixie / arm64).
+# Run directly on the Pi — no cross-compiler or toolchain file needed.
+#
+# Prerequisites (install once):
+#   sudo apt install cmake ninja-build pkg-config libgpiod-dev
+#
+# Output: build-native/PgTgPiGpio
+set -e
 
-cd build-aarch64/
-# Only need to do this one time but do it anyway
-cmake .. -DCMAKE_TOOLCHAIN_FILE=../cmake/aarch64-rpi4-toolchain.cmake -DCMAKE_BUILD_TYPE=Release -G Ninja
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BUILD_DIR="${SCRIPT_DIR}/build-native"
 
-# compile
+# Verify required tools and libraries are present.
+missing=()
+for tool in cmake ninja pkg-config; do
+    command -v "$tool" >/dev/null 2>&1 || missing+=("$tool")
+done
+if ! pkg-config --exists libgpiod 2>/dev/null; then
+    missing+=("libgpiod-dev")
+fi
+
+if [ ${#missing[@]} -gt 0 ]; then
+    echo "ERROR: missing dependencies: ${missing[*]}"
+    echo "Install with: sudo apt install cmake ninja-build pkg-config libgpiod-dev"
+    exit 1
+fi
+
+# Verify libgpiod is >= 2.0 as required by CMakeLists.txt.
+GPIOD_VER=$(pkg-config --modversion libgpiod 2>/dev/null || echo "0")
+if ! pkg-config --atleast-version=2.0 libgpiod 2>/dev/null; then
+    echo "ERROR: libgpiod >= 2.0 required, found ${GPIOD_VER}"
+    exit 1
+fi
+
+mkdir -p "$BUILD_DIR"
+cd "$BUILD_DIR"
+
+# Configure — native host build, Release optimisation, Ninja generator.
+cmake .. \
+    -DCMAKE_BUILD_TYPE=Release \
+    -G Ninja
+
+# Compile.
 ninja
 
-
+echo ""
+echo "Build complete: ${BUILD_DIR}/PgTgPiGpio"
