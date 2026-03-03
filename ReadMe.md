@@ -113,7 +113,7 @@ sudo apt install cmake ninja-build pkg-config libgpiod-dev
 
 ```bash
 ./build
-# Produces: build-native/PgTgPiGpio (you need to setup the cross-compiler yourself)
+# Produces: build-native/PgTgPiGpio
 ```
 
 The script verifies all prerequisites and the libgpiod version before building.
@@ -131,6 +131,7 @@ and creating the configuration file here:
 ---
 
 ### Option B — Cross-compile (in WSL2)
+(you need to setup the cross-compiler yourself)
 
 ```bash
 ./build-with-cross-compiler
