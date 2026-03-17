@@ -170,7 +170,7 @@ Now edit the conf file for particular configuration
 
 ```bash
 
-nano /etc/PgTgPiGpio/PgTgPiGpio.conf
+sudo nano /etc/PgTgPiGpio/PgTgPiGpio.conf
 
 sudo systemctl restart PgTgPiGpio
 
