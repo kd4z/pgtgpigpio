@@ -153,12 +153,27 @@ and creating the configuration file here:
 # SCPs pgtgpigpio_1.0.0_arm64.deb to pi@<yourPiIpaddress>:/home/pi/
 ```
 
-### 3. Install on Pi
+### 3. Install on Pi from Deployment deb file on GitHub instead of compiling it yourself
 
-SCP the deb package to `/tmp`
+Browse to https://github.com/KD4Z/PgTgPiGpio/releases and check for latest release filename. For example: `pgtgpigpio_1.0.0_arm64.deb` Change the filename in wget below if different.
+
+From your Pi shell prompt
 
 ```bash
+cd /tmp
+wget https://github.com/KD4Z/PgTgPiGpio/releases/download/1.0.0/pgtgpigpio_1.0.0_arm64.deb
+
 sudo apt install /tmp/pgtgpigpio_1.0.0_arm64.deb
+
+```
+Now edit the conf file for particular configuration
+
+```bash
+
+nano /etc/PgTgPiGpio/PgTgPiGpio.conf
+
+sudo systemctl restart PgTgPiGpio
+
 ```
 
 The package installer:
