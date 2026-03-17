@@ -153,7 +153,9 @@ and creating the configuration file here:
 # SCPs pgtgpigpio_1.0.0_arm64.deb to pi@<yourPiIpaddress>:/home/pi/
 ```
 
-### 3. Install on Pi from Deployment deb file on GitHub instead of compiling it yourself
+---
+
+### Option C — Install on Pi from Deployment deb file on GitHub instead of compiling it yourself
 
 Browse to https://github.com/KD4Z/PgTgPiGpio/releases and check for latest release filename. For example: `pgtgpigpio_1.0.0_arm64.deb` Change the filename in wget below if different.
 
@@ -175,6 +177,7 @@ sudo nano /etc/PgTgPiGpio/PgTgPiGpio.conf
 sudo systemctl restart PgTgPiGpio
 
 ```
+---
 
 The package installer:
 - Creates the `pgtgpigpio` system user and adds it to the `gpio` group
